@@ -272,6 +272,12 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       }
     }
     break;
+    case KC_F24:  //map F24 to repeat key
+      if (record->event.pressed) {
+        tap_code16(QK_REPEAT_KEY);
+      }
+    break;
+    
     case ST_MACRO_0:
     if (record->event.pressed) {
       SEND_STRING(SS_TAP(X_G)SS_DELAY(100)  SS_LSFT(SS_TAP(X_MINUS)));
