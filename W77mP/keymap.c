@@ -256,6 +256,7 @@ bool is_mouse_record_kb(uint16_t keycode, keyrecord_t* record) {
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
+    
   case QK_MODS ... QK_MODS_MAX: 
     // Mouse keys with modifiers work inconsistently across operating systems, this makes sure that modifiers are always
     // applied to the mouse key that was pressed.
@@ -276,7 +277,7 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       if (record->event.pressed) {
         tap_code16(QK_REPEAT_KEY);
       }
-    break;
+    return false;
     
     case ST_MACRO_0:
     if (record->event.pressed) {
