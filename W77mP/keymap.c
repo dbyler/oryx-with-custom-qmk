@@ -3,6 +3,7 @@
 #define MOON_LED_LEVEL LED_LEVEL
 #ifndef ZSA_SAFE_RANGE
 #define ZSA_SAFE_RANGE SAFE_RANGE
+#define LT_REP LT(NAV, KC_0)
 #endif
 
 enum custom_keycodes {
@@ -16,7 +17,6 @@ enum custom_keycodes {
   NAVIGATOR_DEC_CPI,
   NAVIGATOR_TURBO,
   NAVIGATOR_AIM,
-  L_REP
 };
 
 
@@ -33,7 +33,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_TRANSPARENT, KC_B,           KC_L,           KC_D,           KC_W,           KC_Z,                                           KC_QUOTE,       KC_F,           KC_O,           KC_U,           KC_J,           KC_TRANSPARENT, 
     KC_TRANSPARENT, MT(MOD_LCTL, KC_N),MT(MOD_LALT, KC_R),MT(MOD_LGUI, KC_T),MT(MOD_LSFT, KC_S),ALL_T(KC_G),                                    ALL_T(KC_Y),    MT(MOD_LSFT, KC_H),MT(MOD_LGUI, KC_A),MT(MOD_LALT, KC_E),MT(MOD_LCTL, KC_I),KC_TRANSPARENT, 
     KC_TRANSPARENT, KC_Q,           KC_X,           LT(7, KC_M),    LT(6, KC_C),    MEH_T(KC_V),                                    MEH_T(KC_K),    KC_P,           KC_ENTER,       DUAL_FUNC_0,    DUAL_FUNC_1,    KC_TRANSPARENT, 
-                                                    LT(2, KC_ESCAPE),LT(3, KC_BSPC),                                 LT(5, L_REP),  LT(4, KC_SPACE)
+                                                    LT(2, KC_ESCAPE),LT(3, KC_BSPC),                                 LT_REP,  LT(4, KC_SPACE)
   ),
   [1] = LAYOUT_voyager(
     KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, 
@@ -253,12 +253,24 @@ bool is_mouse_record_kb(uint16_t keycode, keyrecord_t* record) {
 }
 
 
+bool remember_last_key_user(uint16_t keycode, keyrecord_t* record,
+                            uint8_t* remembered_mods) {
+  if (keycode == LT_REP) { return false; }
+  return true;
+}
 
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
   switch (keycode) {
     
   case QK_MODS ... QK_MODS_MAX: 
+    case LT_REP:  // NAV layer on hold, Repeat Key on tap.
+      if (record->tap.count) {  // On tap.
+        repeat_key_invoke(&record->event);  // Repeat the last key.
+        return false;  // Skip default handling.
+      }
+      break;
+
     // Mouse keys with modifiers work inconsistently across operating systems, this makes sure that modifiers are always
     // applied to the mouse key that was pressed.
     if (IS_MOUSE_KEYCODE(QK_MODS_GET_BASIC_KEYCODE(keycode))) {
@@ -274,17 +286,6 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       }
     }
     break;
-
-  case L_REP:
-      if (record->event.pressed) {
-          // Do nothing on press for this custom keycode, it will only be sent on tap
-          // because the LT(5, L_REP) key handles the layer switch on hold.
-      } else {
-          // On release, if QMK decides it was a tap, the custom keycode is sent.
-          // We tap the actual key we want: QK_REPEAT_KEY
-          tap_code16(QK_REPEAT_KEY);
-      }
-      return false; // Consume the keycode so it is not sent to the host.
   
   // Any plain F24 (e.g., your layer 1 key) → Repeat
   case KC_F24:
