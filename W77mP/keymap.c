@@ -15,7 +15,8 @@ enum custom_keycodes {
   NAVIGATOR_INC_CPI,
   NAVIGATOR_DEC_CPI,
   NAVIGATOR_TURBO,
-  NAVIGATOR_AIM
+  NAVIGATOR_AIM,
+  L_REP
 };
 
 
@@ -32,7 +33,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     KC_TRANSPARENT, KC_B,           KC_L,           KC_D,           KC_W,           KC_Z,                                           KC_QUOTE,       KC_F,           KC_O,           KC_U,           KC_J,           KC_TRANSPARENT, 
     KC_TRANSPARENT, MT(MOD_LCTL, KC_N),MT(MOD_LALT, KC_R),MT(MOD_LGUI, KC_T),MT(MOD_LSFT, KC_S),ALL_T(KC_G),                                    ALL_T(KC_Y),    MT(MOD_LSFT, KC_H),MT(MOD_LGUI, KC_A),MT(MOD_LALT, KC_E),MT(MOD_LCTL, KC_I),KC_TRANSPARENT, 
     KC_TRANSPARENT, KC_Q,           KC_X,           LT(7, KC_M),    LT(6, KC_C),    MEH_T(KC_V),                                    MEH_T(KC_K),    KC_P,           KC_ENTER,       DUAL_FUNC_0,    DUAL_FUNC_1,    KC_TRANSPARENT, 
-                                                    LT(2, KC_ESCAPE),LT(3, KC_BSPC),                                 LT(5, KC_F24),  LT(4, KC_SPACE)
+                                                    LT(2, KC_ESCAPE),LT(3, KC_BSPC),                                 LT(5, L_REP),  LT(4, KC_SPACE)
   ),
   [1] = LAYOUT_voyager(
     KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, 
@@ -274,16 +275,24 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
     break;
 
-    case LT(5, KC_F24):
-        if (!record->tap.count) {
-          return true;
-        }
-        if (record->event.pressed) {
-          tap_code16(QK_REPEAT_KEY);               // or QK_ALT_REPEAT_KEY with Shift, etc.
-          return false; // suppress the default KC_F24 tap
-        }
-        return false;
-            
+    case L_REP:
+      if (record->event.pressed) {
+        // Do nothing on press for this custom keycode, it will only be sent on tap
+        // because the LT(5, L_REP) key handles the layer switch on hold.
+      } else {
+        // On release, if QMK decides it was a tap, the custom keycode is sent.
+        // We tap the actual key we want: QK_REPEAT_KEY
+        tap_code16(QK_REPEAT_KEY);
+      }
+      return false; // Consume the keycode so it is not sent to the host.
+
+        // Any plain F24 (e.g., your layer 1 key) → Repeat
+    case KC_F24:
+        if (record->event.pressed) {
+            tap_code16(QK_REPEAT_KEY);
+        }
+        return false;
+       
     case ST_MACRO_0:
     if (record->event.pressed) {
       SEND_STRING(SS_TAP(X_G)SS_DELAY(100)  SS_LSFT(SS_TAP(X_MINUS)));
