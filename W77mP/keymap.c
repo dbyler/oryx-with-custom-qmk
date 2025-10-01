@@ -275,26 +275,15 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     break;
 
     case LT(5, KC_F24):
-        if (record->event.pressed) {
-            // Don't decide yet; let QMK figure out tap vs hold.
-            return true;
-        } else {
-            // On release, if it was a tap (not interrupted), emit Repeat instead of F24.
-            if (record->tap.count > 0 && !record->tap.interrupted) {
-                tap_code16(QK_REPEAT_KEY);               // or QK_ALT_REPEAT_KEY with Shift, etc.
-                return false; // suppress the default KC_F24 tap
-            }
-            // It was a hold → keep normal layer-off behavior.
-            return true;
+        if (!record->tap.count) {
+          return true;
         }
-
-    // Any plain F24 (e.g., your layer 1 key) → Repeat
-    case KC_F24:
         if (record->event.pressed) {
-            tap_code16(QK_REPEAT_KEY);
+          tap_code16(QK_REPEAT_KEY);               // or QK_ALT_REPEAT_KEY with Shift, etc.
+          return false; // suppress the default KC_F24 tap
         }
         return false;
-    
+            
     case ST_MACRO_0:
     if (record->event.pressed) {
       SEND_STRING(SS_TAP(X_G)SS_DELAY(100)  SS_LSFT(SS_TAP(X_MINUS)));
