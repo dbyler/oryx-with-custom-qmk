@@ -6,7 +6,9 @@ on:
       layout_id:
         description: "Layout id available in URL https://configure.zsa.io/voyager/layouts/[ID_IS_HERE]/latest"
         required: true
-        default: "OorKq"
+        default: "W77mP"
+        # OorKq - Dan
+        # W77mP - Alex's 3 rows mini
       layout_geometry:
         description: "Keyboard type"
         type: choice
