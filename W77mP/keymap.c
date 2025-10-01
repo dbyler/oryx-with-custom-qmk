@@ -275,24 +275,24 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     }
     break;
 
-    case L_REP:
-      if (record->event.pressed) {
-        // Do nothing on press for this custom keycode, it will only be sent on tap
-        // because the LT(5, L_REP) key handles the layer switch on hold.
-      } else {
-        // On release, if QMK decides it was a tap, the custom keycode is sent.
-        // We tap the actual key we want: QK_REPEAT_KEY
-        tap_code16(QK_REPEAT_KEY);
-      }
-      return false; // Consume the keycode so it is not sent to the host.
-
-        // Any plain F24 (e.g., your layer 1 key) → Repeat
-    case KC_F24:
-        if (record->event.pressed) {
-            tap_code16(QK_REPEAT_KEY);
-        }
-        return false;
-       
+  case L_REP:
+      if (record->event.pressed) {
+          // Do nothing on press for this custom keycode, it will only be sent on tap
+          // because the LT(5, L_REP) key handles the layer switch on hold.
+      } else {
+          // On release, if QMK decides it was a tap, the custom keycode is sent.
+          // We tap the actual key we want: QK_REPEAT_KEY
+          tap_code16(QK_REPEAT_KEY);
+      }
+      return false; // Consume the keycode so it is not sent to the host.
+  
+  // Any plain F24 (e.g., your layer 1 key) → Repeat
+  case KC_F24:
+      if (record->event.pressed) {
+          tap_code16(QK_REPEAT_KEY);
+      }
+      return false;
+      
     case ST_MACRO_0:
     if (record->event.pressed) {
       SEND_STRING(SS_TAP(X_G)SS_DELAY(100)  SS_LSFT(SS_TAP(X_MINUS)));
