@@ -28,7 +28,7 @@ enum custom_keycodes {
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [0] = LAYOUT_voyager(
-    KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, 
+    KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT,                                 KC_TRANSPARENT, KC_TRANSPARENT, KC_TRANSPARENT, QK_REP, QK_REPEAT_KEY, KC_F24, 
     KC_TRANSPARENT, KC_B,           KC_L,           KC_D,           KC_W,           KC_Z,                                           KC_QUOTE,       KC_F,           KC_O,           KC_U,           KC_J,           KC_TRANSPARENT, 
     KC_TRANSPARENT, MT(MOD_LCTL, KC_N),MT(MOD_LALT, KC_R),MT(MOD_LGUI, KC_T),MT(MOD_LSFT, KC_S),ALL_T(KC_G),                                    ALL_T(KC_Y),    MT(MOD_LSFT, KC_H),MT(MOD_LGUI, KC_A),MT(MOD_LALT, KC_E),MT(MOD_LCTL, KC_I),KC_TRANSPARENT, 
     KC_TRANSPARENT, KC_Q,           KC_X,           LT(7, KC_M),    LT(6, KC_C),    MEH_T(KC_V),                                    MEH_T(KC_K),    KC_P,           KC_ENTER,       DUAL_FUNC_0,    DUAL_FUNC_1,    KC_TRANSPARENT, 
@@ -273,11 +273,27 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
       }
     }
     break;
-    case KC_F24:  //map F24 to repeat key
-      if (record->event.pressed) {
-        tap_code16(QK_REPEAT_KEY);
-      }
-    return false;
+
+    case LT(5, KC_F24):
+        if (record->event.pressed) {
+            // Don't decide yet; let QMK figure out tap vs hold.
+            return true;
+        } else {
+            // On release, if it was a tap (not interrupted), emit Repeat instead of F24.
+            if (record->tap.count > 0 && !record->tap.interrupted) {
+                tap_code16(QK_REPEAT_KEY);               // or QK_ALT_REPEAT_KEY with Shift, etc.
+                return false; // suppress the default KC_F24 tap
+            }
+            // It was a hold → keep normal layer-off behavior.
+            return true;
+        }
+
+    // Any plain F24 (e.g., your layer 1 key) → Repeat
+    case KC_F24:
+        if (record->event.pressed) {
+            tap_code16(QK_REPEAT_KEY);
+        }
+        return false;
     
     case ST_MACRO_0:
     if (record->event.pressed) {
